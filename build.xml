@@ -83,6 +83,31 @@
             <arg value="--compiler_jar=${tools}/compiler.jar" />
         </exec>
     </target>
+    
+    <target name="debug_compile" depends="init,get.closure,get.compiler,debug_deps">
+        <antcall target="prepare.test">
+            <param name="compiled" value="1"/>
+        </antcall>
+        <!-- Ignore changes -->
+        <exec executable="git">
+            <arg line="update-index --assume-unchanged jsnetworkx.js" />
+        </exec>
+        <exec executable="python" output="jsnetworkx.js" logError="yes">
+            <arg value="${goog}/closure/bin/build/closurebuilder.py" />
+            <arg value="--root=${goog}" />
+            <arg value="--root=${nx}" />
+            <arg value="--namespace=jsnx" />
+            <arg value="--output_mode=script" />
+            <arg value="--compiler_flags=--formatting=PRETTY_PRINT" />
+            <arg value="--compiler_flags=--output_wrapper=(function(){%output%}());" />
+            <arg value="--compiler_flags=--compilation_level=ADVANCED_OPTIMIZATIONS" />
+            <arg value="--compiler_flags=--generate_exports" />
+            <arg value="--compiler_flags=--define=goog.DEBUG=false" />
+            <arg value="--compiler_flags=--define=jsnx.TESTING=true" />
+            <arg value="--compiler_flags=--externs=jsnx/externs/d3.js" />
+            <arg value="--compiler_jar=${tools}/compiler.jar" />
+        </exec>
+    </target>
 
     <target name="compress" depends="init,get.closure,get.compiler">
         <!-- Ignore changes -->
@@ -113,6 +138,12 @@
             <arg value="SpecRunner.html" />
             <arg value="${nx}" />
             <arg value="${compiled}" />
+        </exec>
+    </target>
+    
+    <target name="debug_deps" depends="init,get.closure">
+        <exec executable="python" output="deps.js" logError="yes">
+            <arg line="${goog}/closure/bin/build/depswriter.py --root_with_prefix='jsnx ../../../../jsnx'" />
         </exec>
     </target>
 
